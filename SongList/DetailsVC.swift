@@ -14,6 +14,10 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
     @IBOutlet weak var artistText: UITextField!
     @IBOutlet weak var nameText: UITextField!
     @IBOutlet weak var imageView: UIImageView!
+    
+    var chosenName = ""
+    var chosenID: UUID?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -32,6 +36,56 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
         imageView.addGestureRecognizer(imageTapRecognizer)
         
         // Do any additional setup after loading the view.
+        
+        // Check whether we are adding or displaying through chosenName value "" = adding
+        
+        if chosenName != "" {
+            // hide save button later TODO: Penis
+            // this means we got something, and want to display, so find it bro
+            
+            let appDelegate = UIApplication.shared.delegate as! AppDelegate
+            let context = appDelegate.persistentContainer.viewContext
+            
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Songs")
+            fetchRequest.returnsObjectsAsFaults = false
+            
+            let idString = chosenID?.uuidString
+            
+            // find something in Core Data with the same ID
+            fetchRequest.predicate = NSPredicate(format: "id = %@", idString!)
+            
+            do{
+                let results = try context.fetch(fetchRequest)
+                if results.count > 0 { //double check if there was something found, but with UUID should be unique so maybe not necessary
+                    for result in results as! [NSManagedObject] {
+                        if let name = result.value(forKey: "name") as? String {
+                            nameText.text = name
+                        }
+                        if let artist = result.value(forKey: "artist") as? String {
+                            artistText.text = artist
+                        }
+                        if let genre = result.value(forKey: "genre") as? String {
+                            genreText.text = genre
+                        }
+                        if let imageData = result.value(forKey: "image") as? Data {
+                            let image = UIImage(data: imageData)
+                            imageView.image = image
+                        }
+                    }
+                }
+                
+            } catch {
+                print("Did not fetch from tableview/Core Data")
+            }
+            
+        }
+        else {
+            // unhide button here later
+            nameText.text = ""
+            artistText.text = ""
+            genreText.text = ""
+            imageView.image = UIImage(named: "saveimage")
+        }
     }
     
     @objc func selectImage() {

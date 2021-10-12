@@ -15,6 +15,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // create two arrays to hold values for the tableview from Core Data
     var nameArray = [String]()
     var idArray = [UUID]()
+    var selectedName = ""
+    var selectedID: UUID?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,15 +78,23 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     @objc func addButtonClicked() {
-        // when button is clicked, you want fresh data, so reset the fields
+        // when button is clicked, you want fresh data, so reset the selected
+        selectedName = ""
         performSegue(withIdentifier: "toDetailsVC", sender: nil)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toDetailsVC" {
             let destinationVC = segue.destination as! DetailsVC
-            // add info here to send to VC
+            destinationVC.chosenName = selectedName
+            destinationVC.chosenID = selectedID
         }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedName = nameArray[indexPath.row]
+        selectedID = idArray[indexPath.row]
+        performSegue(withIdentifier: "toDetailsVC", sender: nil)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
